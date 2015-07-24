@@ -1,0 +1,410 @@
+@mathjax@
+@github-styles@
+
+# Sorting Algorithms
+
+I decided I wanted to spend a little bit of time implementing sorting
+algorithms, and it seemed like a good time to test out my literate python
+system. In what follows I'll implement the "Big 3" fast sorting
+algorithms, Merge sort, Quicksort, and Heapsort.
+
+So, let's get started. First let's ensure that division and `print()`
+work nicely even on old versions of python.
+
+```python
+from __future__ import division, print_function
+```
+## Merge Sort
+
+> It's easy to put two lists together if they're already sorted.
+> --- Caleb Jones
+
+The first function that I'll implement is merge sort. Merge sort works
+based on the twin observations that:
+
+* It is easy to merge two lists that are already sorted.
+* Any list with only one element is already sorted.
+
+Based on these two facts, an efficient recursive sorting algorithm can be
+defined. Merge sort emerges as a divide and conquery algorithm: To sort
+a list, we first split it in two and sort both of those.
+Then we merge the two sorted lists together, producing a single sorted list.
+We use the base case that a list with one element is sorted to end the
+recursion.
+
+Here we define `mergesort()` recursively in terms of itself and `merge()`.
+
+```python
+def mergesort(l):
+    if len(l) <= 1:
+        return l
+
+    split = len(l) // 2
+    first_half = mergesort(l[:split])
+    second_half = mergesort(l[split:])
+    return merge(first_half, second_half)
+```
+
+The merge that we use above is a similarly simple function to implement.
+In order to merge two lists, we loop, popping whichever first element is
+smaller and appending it to another list. Once both lists have been depleted
+we return the merged list.
+
+As a minor optimization, and to eliminate an edge case, once one list is
+empty we may simply add the entire other list onto the end of our
+"results" list and then return.
+
+```python
+def merge(a, b):
+    l = []
+    while True:
+        if not a:
+            l.extend(b)
+            break
+        elif not b:
+            l.extend(a)
+            break
+
+        if a[0] < b[0]:
+            elem = a.pop(0)
+        else:
+            elem = b.pop(0)
+        l.append(elem)
+      
+    return l
+```
+
+Merge sort is a beautiful algorithm, but why is it fast? To see the
+bahavior of it, we can do a complexity analysis.
+Merging two lists that are already sorted is a simple \\(O(n)\\) algorithm,
+you need one comparison for each element of the list to determine
+which list to take the next element from. Splitting the list can
+be performed in \\(O(1)\\) time, if you do it correctly, but even the
+slowest version shouldn't be slower than \\(O(n)\\). Since we're dividing
+the list in half each time, we only have merge \\(O(\log n)\\) lists.
+
+If we want to do it more rigorously (but not very rigorously, that's
+an exercise to the reader), we can write a recurrence relation.
+
+\begin{align}
+T(1) &= O(1) \\\\
+T(n) &= T(n/2) + T(n/2) + O(n) \\\\
+&= 2T(n/2) + O(n) \\\\
+&= 4T(n/4) + O(n) + O(n) \\\\
+&= 8T(n/8) + O(n) + O(n) + O(n) \\\\
+&\cdots \\\\
+&= nT(n/n) + \log n \times O(n) \\\\
+&= O(n) + O(n \log n) \\\\
+&= O(n \log n)
+\end{align}
+
+## Quicksort
+
+> All of the smaller numbers come before all of the bigger ones.
+> --- Caleb Jones
+
+Quicksort is another fun sorting algorithm, described just as simply
+and elegantly as a recursive function. It is a divide and conquer algorithm
+just like merge sort is.
+
+In quicksort, we have a pair of principles similar to those in merge sort.
+We take the observation that:
+
+* In a sorted list all of the smaller numbers come before all the bigger ones.
+* If there's only one elemnt in a list it's already sorted.
+
+First we pick a "pivot," and then split off two lists, one containing every
+element smaller than our pivot and the other containing every element
+greater than or equal to it. Then we sort both of those lists with
+quicksort and append them to each other. We have to make sure that the
+pivot itself is not a member of the list, otherwise we can have the
+whole list get stuck on one side of the pivot forever and overflow the
+stack.
+
+```python
+def quicksort(l):
+    if len(l) <= 1:
+        return l
+
+    pivot = get_pivot(l)
+    l = l[:]
+    l.remove(pivot)
+
+    before = [item for item in l if item < pivot]
+    after = [item for item in l if item >= pivot]
+    return quicksort(before) + [pivot] + quicksort(after)
+```
+
+Of course choosing the pivot, which I glossed over in the previous section,
+is an important and difficult problem. The simplest way is just to use
+the first element of the list, but if the list is sorted then it breaks
+down and causes the sort to become \\(O(n^2)\\).
+
+The method that we'll use here is called the median of three; we take the
+first, middle, and last elements of the list, and use the median of those
+elements. In the case that the list is already sorted, we'll get the
+absolute perfect pivot, and in most other cases we get a decent pivot
+most of the time.
+
+
+```python
+def get_pivot(l):
+    # There's no middle element in a list with 2 elements
+    if len(l) < 3:
+        return l[0]
+
+    first, middle, last = l[0], l[len(l) // 2], l[-1]
+```
+
+We can find the median by permuting it, which isn't necessarily the most
+efficient way, but it is the prettiest. Each of these three swaps is
+necessary to ensure that the median element ends up in `middle`.
+For simplicity of explanation, let's call the 3 elements 0, 1, and 2.
+0 simply represents the smaller number, 1 the middle, and 2 the largest.
+
+* The first comparison will change `1 0 2` into `0 1 2`, which is done.
+* If the first comparison changes `2 0 1` into `0 2 1`, then the second
+  comparison will swap that into `0 1 2`, which is done.
+* If the first comparison leaves `1 2 0` as `1 2 0`, and the second
+  changes that into `1 0 2`, then the final comparison will leave it `0 1 2`.
+
+These three examples show why each comparison is necessary, but proving
+that they're sufficient is left as an exercise.
+
+```python
+    # ...
+    if middle < first:
+        first, middle = middle, first
+    if last < middle:
+        middle, last = last, middle
+    if middle < first:
+        first, middle = middle, first
+
+    return middle
+```
+
+## Heapsort
+
+> Magic. Just magic.
+> --- Caleb Jones
+
+Heapsort works by building a heap, and then repeatedly popping the first
+element off and adding it to a list. Since the first element a min-heap
+(the kind we'll be using) is always the smallest element, repeatedly
+popping elements will give us all the elements of our list in order. But
+how does a heap provide this behavior?
+
+### Heaps
+
+Let's take a quick diversion so we can refresh ourself on heaps. Heaps are
+very important data structures. Heaps provide a specially organized binary
+tree that guarantees certain properties. A heap can be organized such that
+the root is either the min or the max. Let's assume a min-heap for all of
+this discussion, just so we can avoid having to make our definitions more
+complex by considering both cases. Let's look at the stats that make a heap
+so magic. Relevant to our sorting, heaps provide the ability to:
+
+* Find the minimum element in \\(O(1)\\) time.
+* Delete the minimum element in \\(O(\log n)\\) time.
+* Insert an element in \\(O(\log n)\\) time.
+
+Heaps are able to maintain these guarantees by preserving an invariant,
+the "heap property." Wikipedia states this property as:
+
+> In a min heap, the keys of parent nodes are less than or equal to
+> those of the children and the lowest key is in the root node.
+
+If you're curious why we're sticking to only min-heaps for our work,
+then you can checkout the mouthful that Wikipedia uses to define a
+heap generically:
+
+> If A is a parent node of B then the key of node A is ordered with
+> respect to the key of node B with the same ordering applying across
+> the heap.
+
+It's not *that* much worse, but it does obscure the meaning some, and
+it's unnecessary for sorting. If a heap is implemented as a binary tree,
+then one further property must hold: it must always be the smallest
+possible tree, when there are n elements, the height must be log n.
+
+Now let's implement a heap.
+We define an insert function that works by inserting the new element
+at the very bottom and then swapping the element up and down the
+tree until the heap property has been restored.
+
+```python
+def heap_insert(heap, elem):
+    heap.append(elem)
+    e = len(heap) - 1
+    re_heapify(heap, e)
+```
+
+We also define our heap's pop function, which remove the minimum element
+from the heap. We do this by moving the last element into the place
+of the first element, and then restoring the heap property by swapping
+the element up and down the tree. Then we return the element that was
+originally the minimum element.
+
+```python
+def heap_pop(heap):
+    # We won't be able to assign to heap[0] if the list we
+    # pop from is too short.
+    if len(heap) <= 1:
+        return heap.pop()
+
+    min_element = heap[0]
+    heap[0] = heap.pop()
+    re_heapify(heap, 0)
+
+    return min_element
+```
+
+To assist with those two functions, we define the `re_heapify()` function
+that we use to restore the heap property coming from a heap that has a
+single element out of place. We can define the right and left children
+of a node at position `n` to be at `2n + 1` and `2n + 2` respectively.
+This can be seen down where we compute the `l` and `r` indices. The
+parent of a node at n is consequently found at `floor((n - 1)/2)`.
+
+This function takes a heap and an index `e` to begin checking at. If the
+element at `e` is smaller than its parent, then we need to move it up the
+tree. If it's not, but it's larger than a child element, then we need to
+swap it *down* the tree. We continue this process until the element finds
+a stable location.
+
+```python
+def re_heapify(heap, e):
+    heaplen = len(heap)
+    while True:
+        p = (e - 1) // 2
+        # If the new element smaller than its parent, swap
+        if p >= 0 and heap[e] < heap[p]:
+            heap[e], heap[p] = heap[p], heap[e]
+            e = p
+        else:
+            l = e*2 + 1
+            r = e*2 + 2
+            # If the new element is larger than a child element, swap it
+            # If r is in range, they're both in range
+            if heaplen > r and (heap[e] > heap[l] or heap[e] > heap[r]):
+                # We want to swap the smaller one up the heap
+                if heap[r] < heap[l]:
+                    heap[e], heap[r] = heap[r], heap[e]
+                    e = r
+                else:
+                    heap[e], heap[l] = heap[l], heap[e]
+                    e = l
+            elif heaplen > l and heap[e] > heap[l]:
+                heap[e], heap[l] = heap[l], heap[e]
+                e = l
+            else:
+                # If we've made it to here then the heap property is satisfied
+                return
+```
+
+### Sorting With Our Heap
+
+Now that we've defined our three heap functions, we can sort a list in
+\\(O(n \log n)\\) time. First we insert each element into the heap, taking
+\\(n \times O(\log n)\\) time, or \\(O(n \log n)\\). Next, we repeatedly pop the
+top element of the heap off and add it to out sorted list.
+This also take \\(O(\log n)\\) time for each element, and so the total time
+for this step is \\(O(n \log n)\\).
+Adding these two produces \\(2 \times O(n \log n)\\), which is just \\(O(n \log n)\\).
+
+```python
+def heapsort(l):
+    heap = []
+    for elem in l:
+        heap_insert(heap, elem)
+
+    sorted_elements = []
+    for _ in l:
+        sorted_elements.append(heap_pop(heap))
+
+    return sorted_elements
+```
+
+## Wrapping it all up
+
+Now, the part that we've all been waiting for, let's try out all of these
+functions and see if they work. (Of course they do, I wouldn't publish this
+article with broken code.) If you're curious and want to try it out for
+yourself, you can run this code using [Orb][]. If you've installed `orb`
+in your `PATH`, just run: `orb run sorts.lpy`. If you don't want go through
+all the work of installing `orb`, don't worry, I'll include the output right
+here after the code.
+
+[Orb]: <https://github.com/porglezomp/orb> "The Orb Literate Programming System"
+
+Now, first let's take a short look at how the heap gets built.
+
+```python
+items = [32, 10, 5, 12, 2, 19, 0, 1]
+foo = []
+
+for item in items:
+    heap_insert(foo, item)
+    print(foo)
+```
+
+This loop adds items to the heap, and if we look closely at the list we
+can see that the heap property is preserved. The ordering of the list that's
+built is very loosely ascending order, but every element is smaller than its
+two children elements.
+
+<pre>
+[32]
+[10, 32]
+[5, 32, 10]
+[5, 12, 10, 32]
+[2, 5, 10, 32, 12]
+[2, 5, 10, 32, 12, 19]
+[0, 5, 2, 32, 12, 19, 10]
+[0, 1, 2, 5, 12, 19, 10, 32]
+</pre>
+
+We can pop all of these elements off into a new list, doing exactly
+what our heapsort does.
+
+```python
+out = []
+for _ in range(len(foo)):
+    out.append(heap_pop(foo))
+    print(foo)
+
+print("Result:", out)
+```
+
+Running this removes each element from the heap one by one, and we end
+up with a sorted list. at the very end.
+
+<pre>
+[1, 5, 2, 32, 12, 19, 10]
+[2, 5, 10, 32, 12, 19]
+[5, 12, 10, 32, 19]
+[10, 12, 19, 32]
+[12, 32, 19]
+[19, 32]
+[32]
+[]
+Result: [0, 1, 2, 5, 10, 12, 19, 32]
+</pre>
+
+Of course, we don't need to do this by hand, we already wrote this
+function! Let's try out the functions we've defined, and make sure
+they sort this the same.
+
+```python
+print(heapsort(items))
+print(quicksort(items))
+print(mergesort(items))
+```
+
+<pre>
+[0, 1, 2, 5, 10, 12, 19, 32]
+[0, 1, 2, 5, 10, 12, 19, 32]
+[0, 1, 2, 5, 10, 12, 19, 32]
+</pre>
+
+They all work beautifully.
