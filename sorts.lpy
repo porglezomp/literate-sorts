@@ -3,8 +3,10 @@
 
 # Sorting Algorithms
 
-A literate programming adventure by Caleb Jones. ([Source][])
-[Code]: <https://github.com/porglezomp/literate-sorts/>
+A literate programming adventure by Caleb Jones. ([Source][], [Twitter][])
+
+[Source]: <https://github.com/porglezomp/literate-sorts/>
+[Twitter]: <https://twitter.com/porglezomp/>
 
 I decided I wanted to spend a little bit of time implementing sorting
 algorithms, and it seemed like a good time to test out my literate python
