@@ -3,13 +3,23 @@
 
 # Sorting Algorithms
 
+A literate programming adventure by Caleb Jones. ([Source][])
+[Code]: <https://github.com/porglezomp/literate-sorts/>
+
 I decided I wanted to spend a little bit of time implementing sorting
 algorithms, and it seemed like a good time to test out my literate python
 system. In what follows I'll implement the "Big 3" fast sorting
 algorithms, Merge sort, Quicksort, and Heapsort.
 
+If you want the code to this exercise, you can find it at [my github page][].
+If you'd like to actually run that code, you can get my [Orb][] tool.
+This article is rendered directly from the code I wrote. I really enjoyed
+making this, and I hope you like it too!
+
+[my github page]: <https://github.com/porglezomp/literate-sorts/>
+
 So, let's get started. First let's ensure that division and `print()`
-work nicely even on old versions of python.
+work nicely even in Python 2.
 
 ```python
 from __future__ import division, print_function
@@ -19,7 +29,7 @@ from __future__ import division, print_function
 > It's easy to put two lists together if they're already sorted.
 > --- Caleb Jones
 
-The first function that I'll implement is merge sort. Merge sort works
+The first function that We'll implement is merge sort. Merge sort works
 based on the twin observations that:
 
 * It is easy to merge two lists that are already sorted.
@@ -81,7 +91,7 @@ you need one comparison for each element of the list to determine
 which list to take the next element from. Splitting the list can
 be performed in \\(O(1)\\) time, if you do it correctly, but even the
 slowest version shouldn't be slower than \\(O(n)\\). Since we're dividing
-the list in half each time, we only have merge \\(O(\log n)\\) lists.
+the list in half each time, we only have merge \\(O(\\log n)\\) lists.
 
 If we want to do it more rigorously (but not very rigorously, that's
 an exercise to the reader), we can write a recurrence relation.
@@ -93,9 +103,9 @@ T(n) &= T(n/2) + T(n/2) + O(n) \\\\
 &= 4T(n/4) + O(n) + O(n) \\\\
 &= 8T(n/8) + O(n) + O(n) + O(n) \\\\
 &\cdots \\\\
-&= nT(n/n) + \log n \times O(n) \\\\
-&= O(n) + O(n \log n) \\\\
-&= O(n \log n)
+&= nT(n/n) + \\log n \times O(n) \\\\
+&= O(n) + O(n \\log n) \\\\
+&= O(n \\log n)
 \end{align}
 
 ## Quicksort
@@ -205,8 +215,8 @@ complex by considering both cases. Let's look at the stats that make a heap
 so magic. Relevant to our sorting, heaps provide the ability to:
 
 * Find the minimum element in \\(O(1)\\) time.
-* Delete the minimum element in \\(O(\log n)\\) time.
-* Insert an element in \\(O(\log n)\\) time.
+* Delete the minimum element in \\(O(\\log n)\\) time.
+* Insert an element in \\(O(\\log n)\\) time.
 
 Heaps are able to maintain these guarantees by preserving an invariant,
 the "heap property." Wikipedia states this property as:
@@ -225,7 +235,7 @@ heap generically:
 It's not *that* much worse, but it does obscure the meaning some, and
 it's unnecessary for sorting. If a heap is implemented as a binary tree,
 then one further property must hold: it must always be the smallest
-possible tree, when there are n elements, the height must be log n.
+possible tree, when there are \\(n\\) elements, the height must be \\(\\log n\\).
 
 Now let's implement a heap.
 We define an insert function that works by inserting the new element
@@ -305,12 +315,12 @@ def re_heapify(heap, e):
 ### Sorting With Our Heap
 
 Now that we've defined our three heap functions, we can sort a list in
-\\(O(n \log n)\\) time. First we insert each element into the heap, taking
-\\(n \times O(\log n)\\) time, or \\(O(n \log n)\\). Next, we repeatedly pop the
+\\(O(n \\log n)\\) time. First we insert each element into the heap, taking
+\\(n \times O(\\log n)\\) time, or \\(O(n \\log n)\\). Next, we repeatedly pop the
 top element of the heap off and add it to out sorted list.
-This also take \\(O(\log n)\\) time for each element, and so the total time
-for this step is \\(O(n \log n)\\).
-Adding these two produces \\(2 \times O(n \log n)\\), which is just \\(O(n \log n)\\).
+This also take \\(O(\\log n)\\) time for each element, and so the total time
+for this step is \\(O(n \\log n)\\).
+Adding these two produces \\(2 \times O(n \\log n)\\), which is just \\(O(n \\log n)\\).
 
 ```python
 def heapsort(l):
