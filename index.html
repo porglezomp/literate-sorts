@@ -13,13 +13,19 @@
 <div class="markdown-body">
 <h1 id="sorting-algorithms">Sorting Algorithms</h1>
 
-<p>I decided I wanted to spend a little bit of time implementing sorting
+<p>A literate programming adventure by Caleb Jones. ([Source][])
+I decided I wanted to spend a little bit of time implementing sorting
 algorithms, and it seemed like a good time to test out my literate python
 system. In what follows I&#8217;ll implement the &#8220;Big 3&#8221; fast sorting
 algorithms, Merge sort, Quicksort, and Heapsort.</p>
 
+<p>If you want the code to this exercise, you can find it at <a href="https://github.com/porglezomp/literate-sorts/">my github page</a>.
+If you&#8217;d like to actually run that code, you can get my <a href="https://github.com/porglezomp/orb" title="The Orb Literate Programming System">Orb</a> tool.
+This article is rendered directly from the code I wrote. I really enjoyed
+making this, and I hope you like it too!</p>
+
 <p>So, let&#8217;s get started. First let&#8217;s ensure that division and <code>print()</code>
-work nicely even on old versions of python.</p>
+work nicely even in Python 2.</p>
 
 <div class="codehilite"><pre><code><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
 </code></pre></div>
@@ -31,7 +37,7 @@ work nicely even on old versions of python.</p>
   &#8212; Caleb Jones</p>
 </blockquote>
 
-<p>The first function that I&#8217;ll implement is merge sort. Merge sort works
+<p>The first function that We&#8217;ll implement is merge sort. Merge sort works
 based on the twin observations that:</p>
 
 <ul>
