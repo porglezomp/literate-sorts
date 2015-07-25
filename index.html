@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"></meta>
+<title>sorts</title>
+<style> .markdown-body { margin: 0 auto; width: 800px; } </style>
+<link rel="stylesheet" type="text/css" href="https://rawgit.com/richleland/pygments-css/master/github.css"></link>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/sindresorhus/github-markdown-css/bb90abdda894850e94fb78d9097dad0f322e48b6/github-markdown.css"></link>
+
+</head>
+<body>
+<div class="markdown-body">
+<h1 id="sorting-algorithms">Sorting Algorithms</h1>
+
+<p>I decided I wanted to spend a little bit of time implementing sorting
+algorithms, and it seemed like a good time to test out my literate python
+system. In what follows I&#8217;ll implement the &#8220;Big 3&#8221; fast sorting
+algorithms, Merge sort, Quicksort, and Heapsort.</p>
+
+<p>So, let&#8217;s get started. First let&#8217;s ensure that division and <code>print()</code>
+work nicely even on old versions of python.</p>
+
+<div class="codehilite"><pre><code><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
+</code></pre></div>
+
+<h2 id="merge-sort">Merge Sort</h2>
+
+<blockquote>
+  <p>It&#8217;s easy to put two lists together if they&#8217;re already sorted.
+  &#8212; Caleb Jones</p>
+</blockquote>
+
+<p>The first function that I&#8217;ll implement is merge sort. Merge sort works
+based on the twin observations that:</p>
+
+<ul>
+<li>It is easy to merge two lists that are already sorted.</li>
+<li>Any list with only one element is already sorted.</li>
+</ul>
+
+<p>Based on these two facts, an efficient recursive sorting algorithm can be
+defined. Merge sort emerges as a divide and conquery algorithm: To sort
+a list, we first split it in two and sort both of those.
+Then we merge the two sorted lists together, producing a single sorted list.
+We use the base case that a list with one element is sorted to end the
+recursion.</p>
+
+<p>Here we define <code>mergesort()</code> recursively in terms of itself and <code>merge()</code>.</p>
+
+<div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">mergesort</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">l</span>
+
+    <span class="n">split</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">first_half</span> <span class="o">=</span> <span class="n">mergesort</span><span class="p">(</span><span class="n">l</span><span class="p">[:</span><span class="n">split</span><span class="p">])</span>
+    <span class="n">second_half</span> <span class="o">=</span> <span class="n">mergesort</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="n">split</span><span class="p">:])</span>
+    <span class="k">return</span> <span class="n">merge</span><span class="p">(</span><span class="n">first_half</span><span class="p">,</span> <span class="n">second_half</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The merge that we use above is a similarly simple function to implement.
+In order to merge two lists, we loop, popping whichever first element is
+smaller and appending it to another list. Once both lists have been depleted
+we return the merged list.</p>
+
+<p>As a minor optimization, and to eliminate an edge case, once one list is
+empty we may simply add the entire other list onto the end of our
+&#8220;results&#8221; list and then return.</p>
+
+<div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">a</span><span class="p">:</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">b</span><span class="p">:</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+            <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">elem</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">elem</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">l</span>
+</code></pre></div>
+
+<p>Merge sort is a beautiful algorithm, but why is it fast? To see the
+bahavior of it, we can do a complexity analysis.
+Merging two lists that are already sorted is a simple \(O(n)\) algorithm,
+you need one comparison for each element of the list to determine
+which list to take the next element from. Splitting the list can
+be performed in \(O(1)\) time, if you do it correctly, but even the
+slowest version shouldn&#8217;t be slower than \(O(n)\). Since we&#8217;re dividing
+the list in half each time, we only have merge \(O(\log n)\) lists.</p>
+
+<p>If we want to do it more rigorously (but not very rigorously, that&#8217;s
+an exercise to the reader), we can write a recurrence relation.</p>
+
+<p>\begin{align}
+T(1) &amp;= O(1) \\
+T(n) &amp;= T(n/2) + T(n/2) + O(n) \\
+&amp;= 2T(n/2) + O(n) \\
+&amp;= 4T(n/4) + O(n) + O(n) \\
+&amp;= 8T(n/8) + O(n) + O(n) + O(n) \\
+&amp;\cdots \\
+&amp;= nT(n/n) + \log n \times O(n) \\
+&amp;= O(n) + O(n \log n) \\
+&amp;= O(n \log n)
+\end{align}</p>
+
+<h2 id="quicksort">Quicksort</h2>
+
+<blockquote>
+  <p>All of the smaller numbers come before all of the bigger ones.
+  &#8212; Caleb Jones</p>
+</blockquote>
+
+<p>Quicksort is another fun sorting algorithm, described just as simply
+and elegantly as a recursive function. It is a divide and conquer algorithm
+just like merge sort is.</p>
+
+<p>In quicksort, we have a pair of principles similar to those in merge sort.
+We take the observation that:</p>
+
+<ul>
+<li>In a sorted list all of the smaller numbers come before all the bigger ones.</li>
+<li>If there&#8217;s only one elemnt in a list it&#8217;s already sorted.</li>
+</ul>
+
+<p>First we pick a &#8220;pivot,&#8221; and then split off two lists, one containing every
+element smaller than our pivot and the other containing every element
+greater than or equal to it. Then we sort both of those lists with
+quicksort and append them to each other. We have to make sure that the
+pivot itself is not a member of the list, otherwise we can have the
+whole list get stuck on one side of the pivot forever and overflow the
+stack.</p>
+
+<div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">quicksort</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">l</span>
+
+    <span class="n">pivot</span> <span class="o">=</span> <span class="n">get_pivot</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">l</span><span class="p">[:]</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pivot</span><span class="p">)</span>
+
+    <span class="n">before</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">l</span> <span class="k">if</span> <span class="n">item</span> <span class="o">&lt;</span> <span class="n">pivot</span><span class="p">]</span>
+    <span class="n">after</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">l</span> <span class="k">if</span> <span class="n">item</span> <span class="o">&gt;=</span> <span class="n">pivot</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">quicksort</span><span class="p">(</span><span class="n">before</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">pivot</span><span class="p">]</span> <span class="o">+</span> <span class="n">quicksort</span><span class="p">(</span><span class="n">after</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Of course choosing the pivot, which I glossed over in the previous section,
+is an important and difficult problem. The simplest way is just to use
+the first element of the list, but if the list is sorted then it breaks
+down and causes the sort to become \(O(n^2)\).</p>
+
+<p>The method that we&#8217;ll use here is called the median of three; we take the
+first, middle, and last elements of the list, and use the median of those
+elements. In the case that the list is already sorted, we&#8217;ll get the
+absolute perfect pivot, and in most other cases we get a decent pivot
+most of the time.</p>
+
+<div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">get_pivot</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="c"># There&#39;s no middle element in a list with 2 elements</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">first</span><span class="p">,</span> <span class="n">middle</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">l</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">],</span> <span class="n">l</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div>
+
+<p>We can find the median by permuting it, which isn&#8217;t necessarily the most
+efficient way, but it is the prettiest. Each of these three swaps is
+necessary to ensure that the median element ends up in <code>middle</code>.
+For simplicity of explanation, let&#8217;s call the 3 elements 0, 1, and 2.
+0 simply represents the smaller number, 1 the middle, and 2 the largest.</p>
+
+<ul>
+<li>The first comparison will change <code>1 0 2</code> into <code>0 1 2</code>, which is done.</li>
+<li>If the first comparison changes <code>2 0 1</code> into <code>0 2 1</code>, then the second
+comparison will swap that into <code>0 1 2</code>, which is done.</li>
+<li>If the first comparison leaves <code>1 2 0</code> as <code>1 2 0</code>, and the second
+changes that into <code>1 0 2</code>, then the final comparison will leave it <code>0 1 2</code>.</li>
+</ul>
+
+<p>These three examples show why each comparison is necessary, but proving
+that they&#8217;re sufficient is left as an exercise.</p>
+
+<div class="codehilite"><pre><code>    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="n">middle</span> <span class="o">&lt;</span> <span class="n">first</span><span class="p">:</span>
+        <span class="n">first</span><span class="p">,</span> <span class="n">middle</span> <span class="o">=</span> <span class="n">middle</span><span class="p">,</span> <span class="n">first</span>
+    <span class="k">if</span> <span class="n">last</span> <span class="o">&lt;</span> <span class="n">middle</span><span class="p">:</span>
+        <span class="n">middle</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">last</span><span class="p">,</span> <span class="n">middle</span>
+    <span class="k">if</span> <span class="n">middle</span> <span class="o">&lt;</span> <span class="n">first</span><span class="p">:</span>
+        <span class="n">first</span><span class="p">,</span> <span class="n">middle</span> <span class="o">=</span> <span class="n">middle</span><span class="p">,</span> <span class="n">first</span>
+
+    <span class="k">return</span> <span class="n">middle</span>
+</code></pre></div>
+
+<h2 id="heapsort">Heapsort</h2>
+
+<blockquote>
+  <p>Magic. Just magic.
+  &#8212; Caleb Jones</p>
+</blockquote>
+
+<p>Heapsort works by building a heap, and then repeatedly popping the first
+element off and adding it to a list. Since the first element a min-heap
+(the kind we&#8217;ll be using) is always the smallest element, repeatedly
+popping elements will give us all the elements of our list in order. But
+how does a heap provide this behavior?</p>
+
+<h3 id="heaps">Heaps</h3>
+
+<p>Let&#8217;s take a quick diversion so we can refresh ourself on heaps. Heaps are
+very important data structures. Heaps provide a specially organized binary
+tree that guarantees certain properties. A heap can be organized such that
+the root is either the min or the max. Let&#8217;s assume a min-heap for all of
+this discussion, just so we can avoid having to make our definitions more
+complex by considering both cases. Let&#8217;s look at the stats that make a heap
+so magic. Relevant to our sorting, heaps provide the ability to:</p>
+
+<ul>
+<li>Find the minimum element in \(O(1)\) time.</li>
+<li>Delete the minimum element in \(O(\log n)\) time.</li>
+<li>Insert an element in \(O(\log n)\) time.</li>
+</ul>
+
+<p>Heaps are able to maintain these guarantees by preserving an invariant,
+the &#8220;heap property.&#8221; Wikipedia states this property as:</p>
+
+<blockquote>
+  <p>In a min heap, the keys of parent nodes are less than or equal to
+  those of the children and the lowest key is in the root node.</p>
+</blockquote>
+
+<p>If you&#8217;re curious why we&#8217;re sticking to only min-heaps for our work,
+then you can checkout the mouthful that Wikipedia uses to define a
+heap generically:</p>
+
+<blockquote>
+  <p>If A is a parent node of B then the key of node A is ordered with
+  respect to the key of node B with the same ordering applying across
+  the heap.</p>
+</blockquote>
+
+<p>It&#8217;s not <em>that</em> much worse, but it does obscure the meaning some, and
+it&#8217;s unnecessary for sorting. If a heap is implemented as a binary tree,
+then one further property must hold: it must always be the smallest
+possible tree, when there are n elements, the height must be log n.</p>
+
+<p>Now let&#8217;s implement a heap.
+We define an insert function that works by inserting the new element
+at the very bottom and then swapping the element up and down the
+tree until the heap property has been restored.</p>
+
+<div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">heap_insert</span><span class="p">(</span><span class="n">heap</span><span class="p">,</span> <span class="n">elem</span><span class="p">):</span>
+    <span class="n">heap</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">re_heapify</span><span class="p">(</span><span class="n">heap</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+</code></pre></div>
+
+<p>We also define our heap&#8217;s pop function, which remove the minimum element
+from the heap. We do this by moving the last element into the place
+of the first element, and then restoring the heap property by swapping
+the element up and down the tree. Then we return the element that was
+originally the minimum element.</p>
+
+<div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">heap_pop</span><span class="p">(</span><span class="n">heap</span><span class="p">):</span>
+    <span class="c"># We won&#39;t be able to assign to heap[0] if the list we</span>
+    <span class="c"># pop from is too short.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">heap</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+    <span class="n">min_element</span> <span class="o">=</span> <span class="n">heap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">heap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">heap</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="n">re_heapify</span><span class="p">(</span><span class="n">heap</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">min_element</span>
+</code></pre></div>
+
+<p>To assist with those two functions, we define the <code>re_heapify()</code> function
+that we use to restore the heap property coming from a heap that has a
+single element out of place. We can define the right and left children
+of a node at position <code>n</code> to be at <code>2n + 1</code> and <code>2n + 2</code> respectively.
+This can be seen down where we compute the <code>l</code> and <code>r</code> indices. The
+parent of a node at n is consequently found at <code>floor((n - 1)/2)</code>.</p>
+
+<p>This function takes a heap and an index <code>e</code> to begin checking at. If the
+element at <code>e</code> is smaller than its parent, then we need to move it up the
+tree. If it&#8217;s not, but it&#8217;s larger than a child element, then we need to
+swap it <em>down</em> the tree. We continue this process until the element finds
+a stable location.</p>
+
+<div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">re_heapify</span><span class="p">(</span><span class="n">heap</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+    <span class="n">heaplen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">e</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="c"># If the new element smaller than its parent, swap</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">heap</span><span class="p">[</span><span class="n">p</span><span class="p">]:</span>
+            <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">],</span> <span class="n">heap</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">heap</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">]</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">e</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">e</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
+            <span class="c"># If the new element is larger than a child element, swap it</span>
+            <span class="c"># If r is in range, they&#39;re both in range</span>
+            <span class="k">if</span> <span class="n">heaplen</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="ow">and</span> <span class="p">(</span><span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">heap</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="ow">or</span> <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">heap</span><span class="p">[</span><span class="n">r</span><span class="p">]):</span>
+                <span class="c"># We want to swap the smaller one up the heap</span>
+                <span class="k">if</span> <span class="n">heap</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">heap</span><span class="p">[</span><span class="n">l</span><span class="p">]:</span>
+                    <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">],</span> <span class="n">heap</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">heap</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">]</span>
+                    <span class="n">e</span> <span class="o">=</span> <span class="n">r</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">],</span> <span class="n">heap</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">heap</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">]</span>
+                    <span class="n">e</span> <span class="o">=</span> <span class="n">l</span>
+            <span class="k">elif</span> <span class="n">heaplen</span> <span class="o">&gt;</span> <span class="n">l</span> <span class="ow">and</span> <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">heap</span><span class="p">[</span><span class="n">l</span><span class="p">]:</span>
+                <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">],</span> <span class="n">heap</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">heap</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="n">heap</span><span class="p">[</span><span class="n">e</span><span class="p">]</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="n">l</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># If we&#39;ve made it to here then the heap property is satisfied</span>
+                <span class="k">return</span>
+</code></pre></div>
+
+<h3 id="sorting-with-our-heap">Sorting With Our Heap</h3>
+
+<p>Now that we&#8217;ve defined our three heap functions, we can sort a list in
+\(O(n log n)\) time. First we insert each element into the heap, taking
+\(n \times O(log n)\) time, or \(O(n log n)\). Next, we repeatedly pop the
+top element of the heap off and add it to out sorted list.
+This also take \(O(log n)\) time for each element, and so the total time
+for this step is \(O(n log n)\).
+Adding these two produces \(2 \times O(n log n)\), which is just \(O(n log n)\).</p>
+
+<div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">heapsort</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="n">heap</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+        <span class="n">heap_insert</span><span class="p">(</span><span class="n">heap</span><span class="p">,</span> <span class="n">elem</span><span class="p">)</span>
+
+    <span class="n">sorted_elements</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+        <span class="n">sorted_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">heap_pop</span><span class="p">(</span><span class="n">heap</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">sorted_elements</span>
+</code></pre></div>
+
+<h2 id="wrapping-it-all-up">Wrapping it all up</h2>
+
+<p>Now, the part that we&#8217;ve all been waiting for, let&#8217;s try out all of these
+functions and see if they work. (Of course they do, I wouldn&#8217;t publish this
+article with broken code.) If you&#8217;re curious and want to try it out for
+yourself, you can run this code using <a href="https://github.com/porglezomp/orb" title="The Orb Literate Programming System">Orb</a>. If you&#8217;ve installed <code>orb</code>
+in your <code>PATH</code>, just run: <code>orb run sorts.lpy</code>. If you don&#8217;t want go through
+all the work of installing <code>orb</code>, don&#8217;t worry, I&#8217;ll include the output right
+here after the code.</p>
+
+<p>Now, first let&#8217;s take a short look at how the heap gets built.</p>
+
+<div class="codehilite"><pre><code><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">foo</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+    <span class="n">heap_insert</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+</code></pre></div>
+
+<p>This loop adds items to the heap, and if we look closely at the list we
+can see that the heap property is preserved. The ordering of the list that&#8217;s
+built is very loosely ascending order, but every element is smaller than its
+two children elements.</p>
+
+<pre>
+[32]
+[10, 32]
+[5, 32, 10]
+[5, 12, 10, 32]
+[2, 5, 10, 32, 12]
+[2, 5, 10, 32, 12, 19]
+[0, 5, 2, 32, 12, 19, 10]
+[0, 1, 2, 5, 12, 19, 10, 32]
+</pre>
+
+<p>We can pop all of these elements off into a new list, doing exactly
+what our heapsort does.</p>
+
+<div class="codehilite"><pre><code><span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">foo</span><span class="p">)):</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">heap_pop</span><span class="p">(</span><span class="n">foo</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Result:&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Running this removes each element from the heap one by one, and we end
+up with a sorted list. at the very end.</p>
+
+<pre>
+[1, 5, 2, 32, 12, 19, 10]
+[2, 5, 10, 32, 12, 19]
+[5, 12, 10, 32, 19]
+[10, 12, 19, 32]
+[12, 32, 19]
+[19, 32]
+[32]
+[]
+Result: [0, 1, 2, 5, 10, 12, 19, 32]
+</pre>
+
+<p>Of course, we don&#8217;t need to do this by hand, we already wrote this
+function! Let&#8217;s try out the functions we&#8217;ve defined, and make sure
+they sort this the same.</p>
+
+<div class="codehilite"><pre><code><span class="k">print</span><span class="p">(</span><span class="n">heapsort</span><span class="p">(</span><span class="n">items</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">quicksort</span><span class="p">(</span><span class="n">items</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">mergesort</span><span class="p">(</span><span class="n">items</span><span class="p">))</span>
+</code></pre></div>
+
+<pre>
+[0, 1, 2, 5, 10, 12, 19, 32]
+[0, 1, 2, 5, 10, 12, 19, 32]
+[0, 1, 2, 5, 10, 12, 19, 32]
+</pre>
+
+<p>They all work beautifully.</p>
+
+</div>
+</body>
+</html>
