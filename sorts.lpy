@@ -225,7 +225,7 @@ heap generically:
 It's not *that* much worse, but it does obscure the meaning some, and
 it's unnecessary for sorting. If a heap is implemented as a binary tree,
 then one further property must hold: it must always be the smallest
-possible tree, when there are n elements, the height must be log n.
+possible tree, when there are \\(n\\) elements, the height must be \\(\\log n\\).
 
 Now let's implement a heap.
 We define an insert function that works by inserting the new element

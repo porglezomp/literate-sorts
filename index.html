@@ -247,7 +247,7 @@ heap generically:</p>
 <p>It&#8217;s not <em>that</em> much worse, but it does obscure the meaning some, and
 it&#8217;s unnecessary for sorting. If a heap is implemented as a binary tree,
 then one further property must hold: it must always be the smallest
-possible tree, when there are n elements, the height must be log n.</p>
+possible tree, when there are \(n\) elements, the height must be \(\log n\).</p>
 
 <p>Now let&#8217;s implement a heap.
 We define an insert function that works by inserting the new element
@@ -324,12 +324,12 @@ a stable location.</p>
 <h3 id="sorting-with-our-heap">Sorting With Our Heap</h3>
 
 <p>Now that we&#8217;ve defined our three heap functions, we can sort a list in
-\(O(n log n)\) time. First we insert each element into the heap, taking
-\(n \times O(log n)\) time, or \(O(n log n)\). Next, we repeatedly pop the
+\(O(n \log n)\) time. First we insert each element into the heap, taking
+\(n \times O(\log n)\) time, or \(O(n \log n)\). Next, we repeatedly pop the
 top element of the heap off and add it to out sorted list.
-This also take \(O(log n)\) time for each element, and so the total time
-for this step is \(O(n log n)\).
-Adding these two produces \(2 \times O(n log n)\), which is just \(O(n log n)\).</p>
+This also take \(O(\log n)\) time for each element, and so the total time
+for this step is \(O(n \log n)\).
+Adding these two produces \(2 \times O(n \log n)\), which is just \(O(n \log n)\).</p>
 
 <div class="codehilite"><pre><code><span class="k">def</span> <span class="nf">heapsort</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
     <span class="n">heap</span> <span class="o">=</span> <span class="p">[]</span>
